@@ -71,19 +71,19 @@ with st.sidebar:
 
     current = st.session_state.page
 
-    if st.button("📊 Dashboard", use_container_width=True,
+    if st.button("📊 Dashboard", width='stretch',
                  type="primary" if current == "Dashboard" else "secondary"):
         navigate("Dashboard")
-    if st.button("💳 Transactions", use_container_width=True,
+    if st.button("💳 Transactions", width='stretch',
                  type="primary" if current == "Transactions" else "secondary"):
         navigate("Transactions")
-    if st.button("📈 Investments", use_container_width=True,
+    if st.button("📈 Investments", width='stretch',
                  type="primary" if current == "Investments" else "secondary"):
         navigate("Investments")
-    if st.button("🗓️ Payments", use_container_width=True,
+    if st.button("🗓️ Payments", width='stretch',
                  type="primary" if current == "Payments" else "secondary"):
         navigate("Payments")
-    if st.button("⚙️ Settings", use_container_width=True,
+    if st.button("⚙️ Settings", width='stretch',
                  type="primary" if current == "Settings" else "secondary"):
         navigate("Settings")
 

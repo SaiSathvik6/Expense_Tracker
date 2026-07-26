@@ -121,7 +121,7 @@ def render_daily_trend(start_date, end_date, filter_label):
     )
     fig.update_traces(line_color="#4ECDC4", line_width=3, marker=dict(size=8))
     fig.update_layout(hovermode="x unified", plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
 
 def render_monthly_comparison():
@@ -156,7 +156,7 @@ def render_monthly_comparison():
         color_discrete_map={"Expenses": "#FF6B6B", "Investments": "#6C5CE7"},
     )
     fig.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
 
 def render_yearly_overview():
@@ -213,7 +213,7 @@ def render_yearly_overview():
         paper_bgcolor="rgba(0,0,0,0)",
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
 
 def render_category_breakdown(start_date, end_date, filter_label):
@@ -258,12 +258,12 @@ def render_category_breakdown(start_date, end_date, filter_label):
         hovertemplate="<b>%{label}</b><br>Amount: ₹%{value:,.2f}<br>Percentage: %{percent}",
     )
     fig.update_layout(showlegend=True, legend=dict(orientation="v", yanchor="middle", y=0.5))
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
     st.subheader("Category Summary")
     df_sorted = df.sort_values("amount", ascending=False).copy()
     df_sorted["amount"] = df_sorted["amount"].apply(format_currency)
-    st.dataframe(df_sorted, use_container_width=True, hide_index=True)
+    st.dataframe(df_sorted, width='stretch', hide_index=True)
 
 
 def render_investment_breakdown(start_date, end_date, filter_label):
@@ -308,9 +308,9 @@ def render_investment_breakdown(start_date, end_date, filter_label):
         hovertemplate="<b>%{label}</b><br>Amount: ₹%{value:,.2f}<br>Percentage: %{percent}",
     )
     fig.update_layout(showlegend=True, legend=dict(orientation="v", yanchor="middle", y=0.5))
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
     st.subheader("Investment Summary")
     df_sorted = df.sort_values("amount", ascending=False).copy()
     df_sorted["amount"] = df_sorted["amount"].apply(format_currency)
-    st.dataframe(df_sorted, use_container_width=True, hide_index=True)
+    st.dataframe(df_sorted, width='stretch', hide_index=True)

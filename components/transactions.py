@@ -202,9 +202,9 @@ def render_edit_form(expense):
 
         col1, col2 = st.columns(2)
         with col1:
-            submitted = st.form_submit_button("💾 Save Changes", use_container_width=True)
+            submitted = st.form_submit_button("💾 Save Changes", width='stretch')
         with col2:
-            cancelled = st.form_submit_button("❌ Cancel", use_container_width=True)
+            cancelled = st.form_submit_button("❌ Cancel", width='stretch')
 
         if submitted:
             if ExpenseModel.update_expense(

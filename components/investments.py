@@ -108,7 +108,7 @@ def render_investment_form():
             placeholder="0.0",
         )
         st.divider()
-        submitted = st.form_submit_button("💾 Add Investment", use_container_width=True, type="primary")
+        submitted = st.form_submit_button("💾 Add Investment", width='stretch', type="primary")
 
         if submitted:
             errors = []
@@ -253,9 +253,9 @@ def render_edit_form(investment):
 
         col1, col2 = st.columns(2)
         with col1:
-            submitted = st.form_submit_button("💾 Save Changes", use_container_width=True)
+            submitted = st.form_submit_button("💾 Save Changes", width='stretch')
         with col2:
-            cancelled = st.form_submit_button("❌ Cancel", use_container_width=True)
+            cancelled = st.form_submit_button("❌ Cancel", width='stretch')
 
         if submitted:
             if InvestmentModel.update_investment(

@@ -127,22 +127,22 @@ def render_event_list():
                             st.markdown(f"- **{period}** — executed at {executed_at}")
 
             with col_actions:
-                if st.button("🚀 Execute Now", key=f"exec_{event_id}", use_container_width=True):
+                if st.button("🚀 Execute Now", key=f"exec_{event_id}", width='stretch'):
                     if EventModel.execute_single_event(event_id):
                         st.rerun()
                     else:
                         st.error("Failed to execute.")
 
                 toggle_label = "⏸️ Pause" if is_active else "▶️ Resume"
-                if st.button(toggle_label, key=f"toggle_{event_id}", use_container_width=True):
+                if st.button(toggle_label, key=f"toggle_{event_id}", width='stretch'):
                     EventModel.toggle_event(event_id, not is_active)
                     st.rerun()
 
-                if st.button("✏️ Edit", key=f"edit_{event_id}", use_container_width=True):
+                if st.button("✏️ Edit", key=f"edit_{event_id}", width='stretch'):
                     st.session_state["editing_event"] = event_id
                     st.rerun()
 
-                if st.button("🗑️ Delete", key=f"del_{event_id}", use_container_width=True):
+                if st.button("🗑️ Delete", key=f"del_{event_id}", width='stretch'):
                     st.session_state[f"confirm_del_{event_id}"] = True
                     st.rerun()
 
@@ -226,9 +226,9 @@ def _render_edit_form(event):
 
         c1, c2 = st.columns(2)
         with c1:
-            submitted = st.form_submit_button("💾 Save Changes", use_container_width=True)
+            submitted = st.form_submit_button("💾 Save Changes", width='stretch')
         with c2:
-            cancelled = st.form_submit_button("✖ Cancel", use_container_width=True)
+            cancelled = st.form_submit_button("✖ Cancel", width='stretch')
 
     if submitted:
         if not title.strip():
@@ -309,7 +309,7 @@ def render_add_event_form():
                 day_of_month = 1
 
         description = st.text_input("Description / Note", placeholder="Optional extra detail")
-        submitted = st.form_submit_button("🗓️ Create Payment", use_container_width=True, type="primary")
+        submitted = st.form_submit_button("🗓️ Create Payment", width='stretch', type="primary")
 
     if submitted:
         if not title.strip():

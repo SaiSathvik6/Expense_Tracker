@@ -40,7 +40,7 @@ def render_expense_form():
             placeholder="0.0",
         )
         st.divider()
-        submitted = st.form_submit_button("💾 Add Expense", use_container_width=True, type="primary")
+        submitted = st.form_submit_button("💾 Add Expense", width='stretch', type="primary")
 
         if submitted:
             errors = []

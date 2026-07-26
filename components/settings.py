@@ -48,7 +48,7 @@ def render_category_management():
             "Category Name",
             placeholder="e.g., Healthcare, Education, Entertainment",
         )
-        submitted = st.form_submit_button("➕ Add Category", use_container_width=True)
+        submitted = st.form_submit_button("➕ Add Category", width='stretch')
         if submitted:
             if not new_category or not new_category.strip():
                 st.error("❌ Category name cannot be empty!")
@@ -80,7 +80,7 @@ def render_category_management():
                 "Select Custom Category to Remove",
                 options=custom_categories,
             )
-            remove_submitted = st.form_submit_button("🗑️ Remove Category", type="primary", use_container_width=True)
+            remove_submitted = st.form_submit_button("🗑️ Remove Category", type="primary", width='stretch')
             if remove_submitted:
                 if CategoryModel.remove_category(category_to_remove):
                     st.success(f"✅ Category '{category_to_remove}' removed!")
@@ -110,7 +110,7 @@ def render_investment_category_management():
             "Category Name",
             placeholder="e.g., Crypto, Real Estate, Bonds",
         )
-        submitted = st.form_submit_button("➕ Add Category", use_container_width=True)
+        submitted = st.form_submit_button("➕ Add Category", width='stretch')
         if submitted:
             if not new_category or not new_category.strip():
                 st.error("❌ Category name cannot be empty!")
@@ -142,7 +142,7 @@ def render_investment_category_management():
                 "Select Custom Category to Remove",
                 options=custom_categories,
             )
-            remove_submitted = st.form_submit_button("🗑️ Remove Category", type="primary", use_container_width=True)
+            remove_submitted = st.form_submit_button("🗑️ Remove Category", type="primary", width='stretch')
             if remove_submitted:
                 if InvestmentCategoryModel.remove_category(category_to_remove):
                     st.success(f"✅ Category '{category_to_remove}' removed!")
@@ -164,7 +164,7 @@ def render_export_section():
     with col2:
         st.write("")
         st.write("")
-        export_button = st.button("📊 Generate CSV", use_container_width=True)
+        export_button = st.button("📊 Generate CSV", width='stretch')
 
     if export_button:
         now = datetime.now()
@@ -195,11 +195,11 @@ def render_export_section():
                 data=csv,
                 file_name=f"expenses_{export_period.lower().replace(' ', '_')}_{now.strftime('%Y%m%d')}.csv",
                 mime="text/csv",
-                use_container_width=True,
+                width='stretch',
             )
             st.success(f"✅ Found {len(expenses)} expenses for {export_period.lower()}!")
             with st.expander("📋 Preview Data"):
-                st.dataframe(df, use_container_width=True, hide_index=True)
+                st.dataframe(df, width='stretch', hide_index=True)
 
 
 def _normalize_investment_category(raw: str) -> str:
@@ -245,7 +245,7 @@ def render_migration_section():
             "Amount": f"{currency}{exp['amount']:,.2f}",
         })
 
-    st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+    st.dataframe(pd.DataFrame(rows), width='stretch', hide_index=True)
 
     st.divider()
     st.markdown(
@@ -255,7 +255,7 @@ def render_migration_section():
 
     col1, col2 = st.columns([1, 3])
     with col1:
-        confirm = st.button("🚀 Migrate All", type="primary", use_container_width=True)
+        confirm = st.button("🚀 Migrate All", type="primary", width='stretch')
 
     if confirm:
         migrated, failed = 0, 0
