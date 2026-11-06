@@ -1,6 +1,6 @@
 import calendar
 from datetime import datetime, date
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from bson import ObjectId
 from database.connection import get_db
 
@@ -201,29 +201,46 @@ class EventModel:
             return []
 
     @staticmethod
-    def run_due_events(force: bool = False) -> List[Dict]:
+    def _create_entry(event, entry_date: datetime, description: str) -> Tuple[bool, str]:
+        """Post one entry for `event` to the collection matching its event_type.
+
+        Returns (success, entry_label).
+        """
         from database.models import ExpenseModel
         from database.investment_model import InvestmentModel
+        from database.miscellaneous_model import MiscellaneousModel
 
+        entry = dict(
+            date=entry_date,
+            category=event["category"],
+            description=description,
+            amount=event["amount"],
+        )
+        event_type = event.get("event_type", "expense")
+        if event_type == "investment":
+            return InvestmentModel.create_investment(**entry), "Investment"
+        if event_type == "family":
+            return MiscellaneousModel.create_entry(**entry), "Family entry"
+        return ExpenseModel.create_expense(**entry), "Expense"
+
+    @staticmethod
+    def run_due_events(force: bool = False) -> List[Dict]:
         today = date.today()
         results = []
 
         for event in EventModel.get_active_events():
-            event_id = str(event["_id"])
-            event_type = event.get("event_type", "expense")
             frequency = event.get("frequency", "monthly")
 
             if frequency == "daily":
-                results.append(EventModel._run_daily_event(event, today, force, ExpenseModel, InvestmentModel))
+                results.append(EventModel._run_daily_event(event, today, force))
             else:
-                results.append(EventModel._run_monthly_event(event, today, force, ExpenseModel, InvestmentModel))
+                results.append(EventModel._run_monthly_event(event, today, force))
 
         return results
 
     @staticmethod
-    def _run_daily_event(event, today: date, force: bool, ExpenseModel, InvestmentModel) -> Dict:
+    def _run_daily_event(event, today: date, force: bool) -> Dict:
         event_id = str(event["_id"])
-        event_type = event.get("event_type", "expense")
         already_done = EventModel.has_been_executed_today(event_id, today)
 
         if already_done and not force:
@@ -237,23 +254,7 @@ class EventModel:
 
         entry_date = datetime(today.year, today.month, today.day)
         desc = event.get("description") or event["title"]
-
-        if event_type == "investment":
-            success = InvestmentModel.create_investment(
-                date=entry_date,
-                category=event["category"],
-                description=f"[Auto-Daily] {desc}",
-                amount=event["amount"],
-            )
-            entry_label = "Investment"
-        else:
-            success = ExpenseModel.create_expense(
-                date=entry_date,
-                category=event["category"],
-                description=f"[Auto-Daily] {desc}",
-                amount=event["amount"],
-            )
-            entry_label = "Expense"
+        success, entry_label = EventModel._create_entry(event, entry_date, f"[Auto-Daily] {desc}")
 
         if success:
             EventModel.mark_executed_daily(event_id, today)
@@ -273,10 +274,9 @@ class EventModel:
         }
 
     @staticmethod
-    def _run_monthly_event(event, today: date, force: bool, ExpenseModel, InvestmentModel) -> Dict:
+    def _run_monthly_event(event, today: date, force: bool) -> Dict:
         event_id = str(event["_id"])
         day = event["day_of_month"]
-        event_type = event.get("event_type", "expense")
 
         last_day = calendar.monthrange(today.year, today.month)[1]
         effective_day = min(day, last_day)
@@ -310,23 +310,7 @@ class EventModel:
 
         entry_date = datetime(today.year, today.month, effective_day)
         desc = event.get("description") or event["title"]
-
-        if event_type == "investment":
-            success = InvestmentModel.create_investment(
-                date=entry_date,
-                category=event["category"],
-                description=f"[Auto] {desc}",
-                amount=event["amount"],
-            )
-            entry_label = "Investment"
-        else:
-            success = ExpenseModel.create_expense(
-                date=entry_date,
-                category=event["category"],
-                description=f"[Auto] {desc}",
-                amount=event["amount"],
-            )
-            entry_label = "Expense"
+        success, entry_label = EventModel._create_entry(event, entry_date, f"[Auto] {desc}")
 
         if success:
             EventModel.mark_executed(event_id, today.year, today.month)
@@ -339,8 +323,6 @@ class EventModel:
 
     @staticmethod
     def execute_single_event(event_id: str) -> bool:
-        from database.models import ExpenseModel
-        from database.investment_model import InvestmentModel
         db = get_db()
         try:
             event = db[EVENTS_COLLECTION].find_one({"_id": ObjectId(event_id)})
@@ -348,26 +330,12 @@ class EventModel:
                 return False
 
             today = date.today()
-            event_type = event.get("event_type", "expense")
             frequency = event.get("frequency", "monthly")
             desc = event.get("description") or event["title"]
 
             if frequency == "daily":
                 entry_date = datetime(today.year, today.month, today.day)
-                if event_type == "investment":
-                    success = InvestmentModel.create_investment(
-                        date=entry_date,
-                        category=event["category"],
-                        description=f"[Manual] {desc}",
-                        amount=event["amount"],
-                    )
-                else:
-                    success = ExpenseModel.create_expense(
-                        date=entry_date,
-                        category=event["category"],
-                        description=f"[Manual] {desc}",
-                        amount=event["amount"],
-                    )
+                success, _ = EventModel._create_entry(event, entry_date, f"[Manual] {desc}")
                 if success:
                     EventModel.mark_executed_daily(event_id, today)
                     return True
@@ -376,21 +344,7 @@ class EventModel:
             day = event["day_of_month"]
             effective_day = min(day, calendar.monthrange(today.year, today.month)[1])
             entry_date = datetime(today.year, today.month, effective_day)
-
-            if event_type == "investment":
-                success = InvestmentModel.create_investment(
-                    date=entry_date,
-                    category=event["category"],
-                    description=f"[Manual] {desc}",
-                    amount=event["amount"],
-                )
-            else:
-                success = ExpenseModel.create_expense(
-                    date=entry_date,
-                    category=event["category"],
-                    description=f"[Manual] {desc}",
-                    amount=event["amount"],
-                )
+            success, _ = EventModel._create_entry(event, entry_date, f"[Manual] {desc}")
 
             if success:
                 EventModel.mark_executed(event_id, today.year, today.month)

@@ -8,9 +8,18 @@ from utils.helpers import format_currency
 import config
 
 
+EVENT_TYPE_LABELS = {
+    "expense": "💸 Expense",
+    "investment": "📈 Investment",
+    "family": "👨‍👩‍👧 Family",
+}
+
+
 def _categories_for_type(event_type: str):
     if event_type == "investment":
         return InvestmentCategoryModel.get_all_categories()
+    if event_type == "family":
+        return list(config.MISCELLANEOUS_CATEGORIES)
     return CategoryModel.get_all_categories()
 
 
@@ -103,7 +112,7 @@ def render_event_list():
             with col_info:
                 desc = event.get("description", "") or "—"
                 etype = event.get("event_type", "expense")
-                etype_label = "📈 Investment" if etype == "investment" else "💸 Expense"
+                etype_label = EVENT_TYPE_LABELS.get(etype, EVENT_TYPE_LABELS["expense"])
                 freq_label = "🔁 Daily" if frequency == "daily" else "📅 Monthly"
                 st.markdown(
                     f"**Amount:** {format_currency(event['amount'])}  |  "
@@ -176,7 +185,12 @@ def _render_edit_form(event):
 
     st.markdown("#### ✏️ Edit Payment")
 
-    # Frequency outside the form so changing it immediately hides/shows Day of Month
+    type_key = f"edit_type_{event_id}"
+    if type_key not in st.session_state:
+        st.session_state[type_key] = current_type
+
+    # Frequency and Payment Type outside the form so changing them immediately
+    # updates the Day of Month field and Category list
     st.markdown("#### 🔁 Frequency")
     st.radio(
         "Frequency",
@@ -188,16 +202,19 @@ def _render_edit_form(event):
     )
     frequency = st.session_state[freq_key]
 
-    with st.form(f"edit_form_{event_id}"):
-        event_type = st.radio(
-            "Payment Type",
-            options=["expense", "investment"],
-            format_func=lambda x: "💸 Expense" if x == "expense" else "📈 Investment",
-            index=0 if current_type == "expense" else 1,
-            horizontal=True,
-        )
-        categories = _categories_for_type(event_type)
+    st.markdown("#### 💰 Payment Type")
+    st.radio(
+        "Payment Type",
+        options=list(EVENT_TYPE_LABELS),
+        format_func=EVENT_TYPE_LABELS.get,
+        key=type_key,
+        horizontal=True,
+        label_visibility="collapsed",
+    )
+    event_type = st.session_state[type_key]
+    categories = _categories_for_type(event_type)
 
+    with st.form(f"edit_form_{event_id}"):
         col1, col2 = st.columns(2)
         with col1:
             title = st.text_input("Payment Name", value=event["title"])
@@ -245,6 +262,8 @@ def _render_edit_form(event):
                 del st.session_state["editing_event"]
                 if freq_key in st.session_state:
                     del st.session_state[freq_key]
+                if type_key in st.session_state:
+                    del st.session_state[type_key]
                 st.rerun()
             else:
                 st.error("Failed to update payment.")
@@ -253,6 +272,8 @@ def _render_edit_form(event):
         del st.session_state["editing_event"]
         if freq_key in st.session_state:
             del st.session_state[freq_key]
+        if type_key in st.session_state:
+            del st.session_state[type_key]
         st.rerun()
 
 
@@ -263,7 +284,8 @@ def render_add_event_form():
     #     "daily or on the chosen day of each month."
     # )
 
-    # Frequency outside the form so changing it immediately hides/shows Day of Month
+    # Frequency and Payment Type outside the form so changing them immediately
+    # updates the Day of Month field and Category list
     st.markdown("#### 🔁 Frequency")
     frequency = st.radio(
         "Frequency",
@@ -276,14 +298,18 @@ def render_add_event_form():
         label_visibility="collapsed",
     )
 
+    st.markdown("#### 💰 Payment Type")
+    event_type = st.radio(
+        "Payment Type",
+        options=list(EVENT_TYPE_LABELS),
+        format_func=EVENT_TYPE_LABELS.get,
+        key="add_payment_event_type",
+        horizontal=True,
+        label_visibility="collapsed",
+    )
+    categories = _categories_for_type(event_type)
+
     with st.form("add_event_form", clear_on_submit=True):
-        event_type = st.radio(
-            "Payment Type",
-            options=["expense", "investment"],
-            format_func=lambda x: "💸 Expense" if x == "expense" else "📈 Investment",
-            horizontal=True,
-        )
-        categories = _categories_for_type(event_type)
 
         col1, col2 = st.columns(2)
         with col1:

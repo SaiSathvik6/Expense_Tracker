@@ -5,6 +5,7 @@ from components.settings import render_settings
 from components.transactions import render_transactions
 from components.payments import render_payments
 from components.investments import render_investments
+from components.family import render_family
 from database.event_model import EventModel
 
 
@@ -43,7 +44,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-VALID_PAGES = {"Dashboard", "Transactions", "Investments", "Settings", "Payments"}
+VALID_PAGES = {"Dashboard", "Transactions", "Investments", "Family", "Settings", "Payments"}
 
 if "page" not in st.session_state:
     qp = st.query_params.get("page", "Dashboard")
@@ -60,8 +61,9 @@ except Exception:
 def navigate(page: str):
     st.session_state.page = page
     st.query_params["page"] = page
-    if "editing_expense" in st.session_state:
-        del st.session_state.editing_expense
+    for key in ("editing_expense", "editing_misc"):
+        if key in st.session_state:
+            del st.session_state[key]
     st.rerun()
 
 
@@ -80,6 +82,9 @@ with st.sidebar:
     if st.button("📈 Investments", width='stretch',
                  type="primary" if current == "Investments" else "secondary"):
         navigate("Investments")
+    if st.button("👨‍👩‍👧 Family", width='stretch',
+                 type="primary" if current == "Family" else "secondary"):
+        navigate("Family")
     if st.button("🗓️ Payments", width='stretch',
                  type="primary" if current == "Payments" else "secondary"):
         navigate("Payments")
@@ -96,6 +101,8 @@ try:
         render_transactions()
     elif st.session_state.page == "Investments":
         render_investments()
+    elif st.session_state.page == "Family":
+        render_family()
     elif st.session_state.page == "Payments":
         render_payments()
     elif st.session_state.page == "Settings":

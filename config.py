@@ -7,6 +7,7 @@ MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
 DATABASE_NAME = "budget_tracker"
 EXPENSES_COLLECTION = "expenses"
 INVESTMENTS_COLLECTION = "investments"
+MISCELLANEOUS_COLLECTION = "miscellaneous"
 
 CURRENCY_SYMBOL = "₹"
 
@@ -28,6 +29,15 @@ INVESTMENT_CATEGORIES = [
     "Gold",
     "Fixed Deposit",
     "Other Investment",
+]
+
+MISCELLANEOUS_CATEGORIES = [
+    "Home",
+    "Factory",
+    "Bills",
+    "Gifts",
+    "Repairs",
+    "Other",
 ]
 
 INVESTMENT_CHART_COLORS = {

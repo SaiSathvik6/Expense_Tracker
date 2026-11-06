@@ -6,17 +6,19 @@ from database.models import ExpenseModel
 from database.investment_model import InvestmentModel
 from database.category_model import CategoryModel
 from database.investment_category_model import InvestmentCategoryModel
+from database.miscellaneous_model import MiscellaneousModel
 from database.connection import get_db
 from utils.helpers import get_current_month_range
 
 
 def render_settings():
     st.header("⚙️ Settings")
-    tab1, tab2, tab3, tab4 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
         "📦 Expense Categories",
         "📈 Investment Categories",
         "📥 Export Data",
         "🔄 Migrate Investments",
+        "🧾 Migrate Home",
     ])
     with tab1:
         render_category_management()
@@ -26,6 +28,8 @@ def render_settings():
         render_export_section()
     with tab4:
         render_migration_section()
+    with tab5:
+        render_home_migration_section()
 
 
 def render_category_management():
@@ -275,6 +279,40 @@ def render_migration_section():
 
         if migrated:
             st.success(f"✅ Successfully migrated {migrated} expense(s) to Investments.")
+        if failed:
+            st.error(f"❌ {failed} entries failed to migrate — they remain in Expenses.")
+        st.rerun()
+
+def render_home_migration_section():
+    st.subheader("👨‍👩‍👧 Migrate Home Expenses to Family")
+    st.markdown(
+        "Moves every **Expense** in the **Home** category to the **Family** page."
+    )
+
+    candidates = ExpenseModel.get_expenses(category="Home")
+
+    if not candidates:
+        st.success("✅ No Home entries left in Expenses.")
+        return
+
+    st.warning(f"Found **{len(candidates)}** Home expense(s):")
+
+    currency = config.CURRENCY_SYMBOL
+    rows = []
+    for exp in candidates:
+        date_str = exp["date"].strftime("%d %b %Y") if hasattr(exp["date"], "strftime") else str(exp["date"])
+        rows.append({
+            "Date": date_str,
+            "Description": exp.get("description") or "—",
+            "Amount": f"{currency}{exp['amount']:,.2f}",
+        })
+
+    st.dataframe(pd.DataFrame(rows), width='stretch', hide_index=True)
+
+    if st.button("🚀 Migrate Home Entries", type="primary"):
+        migrated, failed = MiscellaneousModel.migrate_from_expenses({"category": "Home"})
+        if migrated:
+            st.success(f"✅ Moved {migrated} entry(s) to Family.")
         if failed:
             st.error(f"❌ {failed} entries failed to migrate — they remain in Expenses.")
         st.rerun()

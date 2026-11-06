@@ -49,6 +49,11 @@ class DatabaseConnection:
             investments.create_index([("date", DESCENDING)])
             investments.create_index([("category", ASCENDING), ("date", DESCENDING)])
 
+            # Miscellaneous collection indexes
+            miscellaneous = self._db[config.MISCELLANEOUS_COLLECTION]
+            miscellaneous.create_index([("date", DESCENDING)])
+            miscellaneous.create_index([("category", ASCENDING), ("date", DESCENDING)])
+
         except Exception as e:
             st.warning(f"Index creation warning: {e}")
     
